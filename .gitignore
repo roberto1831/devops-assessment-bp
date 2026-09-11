@@ -1,3 +1,11 @@
 node_modules/
 coverage/
 .env
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Terraform plans
+*.tfplan
