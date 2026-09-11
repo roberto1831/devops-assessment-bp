@@ -1,0 +1,60 @@
+name: Deploy Dev
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Image tag
+        required: false
+        default: latest
+
+env:
+  IMAGE: us-central1-docker.pkg.dev/devops-assessment-bp/docker-images/devops-service
+
+jobs:
+  deploy:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch != 'master'
+      )
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SA_EMAIL }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy Cloud Run
+        run: |
+          gcloud run deploy devops-dev \
+            --image ${IMAGE}:latest \
+            --region us-central1 \
+            --platform managed \
+            --allow-unauthenticated
+
+      - name: Smoke Test
+        run: |
+          URL=$(gcloud run services describe devops-dev \
+            --region us-central1 \
+            --format='value(status.url)')
+
+          echo $URL
+
+          curl -f "$URL/health"

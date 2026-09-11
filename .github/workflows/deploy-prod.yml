@@ -1,0 +1,72 @@
+name: Deploy Prod
+
+on:
+  push:
+    branches:
+      - master
+
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Image tag
+        required: false
+        default: latest
+
+env:
+  IMAGE: us-central1-docker.pkg.dev/devops-assessment-bp/docker-images/devops-service
+
+jobs:
+  deploy:
+    environment: production
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SA_EMAIL }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - run: |
+          gcloud container clusters get-credentials \
+            devops-prod \
+            --region us-central1
+
+      - name: Install Kustomize
+        run: |
+          curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
+          sudo mv kustomize /usr/local/bin
+
+      - name: Update image
+        run: |
+          cd infra/k8s/overlays/prod
+          kustomize edit set image \
+            devops-service=${IMAGE}:latest
+
+      - name: Apply manifests
+        run: |
+          kubectl apply -k infra/k8s/overlays/prod
+
+      - name: Wait for rollout
+        run: |
+          kubectl -n prod rollout status \
+            deployment/devops-service \
+            --timeout=180s
+
+      - name: Smoke Test
+        run: |
+          kubectl -n prod get ingress
+
+      - name: Rollback if failed
+        if: failure()
+        run: |
+          kubectl -n prod rollout undo \
+            deployment/devops-service
