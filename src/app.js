@@ -62,4 +62,7 @@ app.post('/token', (req, res) => {
 app.all('/DevOps', (req, res) => {
   return res.send('ERROR');
 });
+app.get('/health', (req, res) => {
+  return res.status(200).send('OK');
+});
 module.exports = app;
