@@ -75,5 +75,21 @@ describe('DevOps API', () => {
 
   expect(secondResponse.status).toBe(401);
 });
+
+test('POST /DevOps with invalid payload returns 400', async () => {
+  const token = signToken();
+
+  const response = await request(app)
+    .post('/DevOps')
+    .set('X-Parse-REST-API-Key', 'valid-api-key')
+    .set('X-JWT-KWY', token)
+    .send({
+      message: 'This is a test',
+      from: 'Rita Asturia',
+      timeToLifeSec: '45',
+    });
+
+  expect(response.status).toBe(400);
+});
   
 });
