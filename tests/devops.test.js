@@ -1,6 +1,7 @@
 const request = require('supertest');
 const app = require('../src/app');
 const { verifyToken } = require('../src/jwt');
+const { signToken } = require('../src/jwt');
 
 describe('DevOps API', () => {
   test('POST /DevOps without API key returns 401', async () => {
@@ -47,4 +48,32 @@ describe('DevOps API', () => {
 
     expect(decoded.jti).toBeDefined();
   });
+  test('POST /DevOps with reused JWT returns 401', async () => {
+  const token = signToken();
+
+  await request(app)
+    .post('/DevOps')
+    .set('X-Parse-REST-API-Key', 'valid-api-key')
+    .set('X-JWT-KWY', token)
+    .send({
+      message: 'This is a test',
+      to: 'Juan Perez',
+      from: 'Rita Asturia',
+      timeToLifeSec: 45,
+    });
+
+  const secondResponse = await request(app)
+    .post('/DevOps')
+    .set('X-Parse-REST-API-Key', 'valid-api-key')
+    .set('X-JWT-KWY', token)
+    .send({
+      message: 'This is a test',
+      to: 'Juan Perez',
+      from: 'Rita Asturia',
+      timeToLifeSec: 45,
+    });
+
+  expect(secondResponse.status).toBe(401);
+});
+  
 });
