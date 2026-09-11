@@ -1,0 +1,41 @@
+{
+  "name": "devops-assessment-bp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "jest --coverage",
+    "lint": "eslint src tests",
+    "format:check": "prettier --check ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roberto1831/devops-assessment-bp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/roberto1831/devops-assessment-bp/issues"
+  },
+  "homepage": "https://github.com/roberto1831/devops-assessment-bp#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "uuid": "^14.0.2",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "eslint": "^10.10.0",
+    "eslint-config-prettier": "^10.1.8",
+    "jest": "^30.5.1",
+    "prettier": "^3.9.6",
+    "supertest": "^7.2.2"
+  }
+}
