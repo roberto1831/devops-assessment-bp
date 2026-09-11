@@ -137,4 +137,10 @@ test('PATCH /DevOps returns ERROR', async () => {
   expect(response.text).toBe('ERROR');
 });
 
+test('GET /health returns 200', async () => {
+  const response = await request(app).get('/health');
+
+  expect(response.status).toBe(200);
+});
+
 });
