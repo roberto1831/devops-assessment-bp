@@ -19,6 +19,14 @@ function signToken() {
   );
 }
 
+function isTokenUsed(jti) {
+  return usedTokens.has(jti);
+}
+
+function markTokenAsUsed(jti) {
+  usedTokens.set(jti, Date.now());
+}
+
 function verifyToken(token) {
   return jwt.verify(token, SECRET);
 }
@@ -27,4 +35,6 @@ module.exports = {
   signToken,
   verifyToken,
   usedTokens,
+  isTokenUsed,
+  markTokenAsUsed,
 };

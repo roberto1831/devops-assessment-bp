@@ -1,5 +1,10 @@
 const express = require('express');
-const { signToken } = require('./jwt');
+const {
+  signToken,
+  verifyToken,
+  isTokenUsed,
+  markTokenAsUsed,
+} = require('./jwt');
 
 const app = express();
 
@@ -14,6 +19,18 @@ app.post('/DevOps', (req, res) => {
   }
 
   if (!jwt) {
+    return res.status(401).send();
+  }
+
+  try {
+    const payload = verifyToken(jwt);
+
+    if (isTokenUsed(payload.jti)) {
+      return res.status(401).send();
+    }
+
+    markTokenAsUsed(payload.jti);
+  } catch {
     return res.status(401).send();
   }
 
