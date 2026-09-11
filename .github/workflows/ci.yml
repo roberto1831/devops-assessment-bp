@@ -80,16 +80,23 @@ jobs:
           workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
           service_account: ${{ vars.GCP_SA_EMAIL }}
 
+      - uses: google-github-actions/setup-gcloud@v2
+
       - run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
-      - run: |
-          docker build -t $IMAGE:sha-${GITHUB_SHA::7} .
+      - name: Build image
+        run: |
+          docker build \
+            -t $IMAGE:sha-${GITHUB_SHA::7} .
 
-      - uses: aquasecurity/trivy-action@master
+      - name: Push image
+        run: |
+          docker push \
+            $IMAGE:sha-${GITHUB_SHA::7}
+
+      - name: Scan image
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.IMAGE }}:sha-${{ github.sha }}
           severity: CRITICAL,HIGH
           exit-code: '1'
-
-      - run: |
-          docker push $IMAGE:sha-${GITHUB_SHA::7}
