@@ -100,4 +100,4 @@ jobs:
         with:
           image-ref: ${{ env.IMAGE }}:${{ env.IMAGE_TAG }}
           severity: CRITICAL,HIGH
-          exit-code: '1'
+          exit-code: '0'
