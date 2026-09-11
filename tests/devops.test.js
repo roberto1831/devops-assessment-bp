@@ -91,5 +91,26 @@ test('POST /DevOps with invalid payload returns 400', async () => {
 
   expect(response.status).toBe(400);
 });
+
+test('POST /DevOps returns greeting', async () => {
+  const token = signToken();
+
+  const response = await request(app)
+    .post('/DevOps')
+    .set('X-Parse-REST-API-Key', 'valid-api-key')
+    .set('X-JWT-KWY', token)
+    .send({
+      message: 'This is a test',
+      to: 'Juan Perez',
+      from: 'Rita Asturia',
+      timeToLifeSec: 45,
+    });
+
+  expect(response.status).toBe(200);
+
+  expect(response.body).toEqual({
+    message: 'Hello Juan Perez your message will be send',
+  });
+});
   
 });
