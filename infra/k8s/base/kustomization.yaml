@@ -1,0 +1,7 @@
+resources:
+  - deployment.yaml
+  - service.yaml
+  - backendconfig.yaml
+  - hpa.yaml
+  - ingress.yaml
+  - secret.yaml
