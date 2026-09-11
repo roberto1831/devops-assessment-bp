@@ -59,4 +59,7 @@ app.post('/token', (req, res) => {
   });
 });
 
+app.all('/DevOps', (req, res) => {
+  return res.send('ERROR');
+});
 module.exports = app;
