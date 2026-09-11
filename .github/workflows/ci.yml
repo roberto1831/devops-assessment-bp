@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+
+env:
+  IMAGE: **-central1-docker.pkg.dev/devops-a**essment-bp/docker-images/devops-s**vice
+
+jobs:
+  lint:
+    runs-on: **untu-latest
+
+    steps:
+      - u**s: actions/checkout@v4
+
+**    - uses: actions/setup-node@v4**       with:
+          node-versi**: 20
+          cache: npm
+
+      **run: npm ci
+      - run: npm run **nt
+      - run: npm run format:ch**k
+
+  test:
+    runs-on: ubuntu-la**st
+
+    steps:
+      - uses: acti**s/checkout@v4
+
+      - uses: acti**s/setup-node@v4
+        with:
+   **     node-version: 20
+          c**he: npm
+
+      - run: npm ci
+    **- run: npm audit --audit-level=hi**
+
+      - run: npm test
+        e**:
+          API_KEY: test-key
+   **     JWT_SECRET: test-secret
+
+   ** - uses: actions/upload-artifact@**
+        with:
+          name: co**rage
+          path: coverage/
+
+ **tatic-analysis:
+    needs: test
+ ** runs-on: ubuntu-latest
+
+    step**
+      - uses: actions/checkout@v**
+      - uses: actions/download-a**ifact@v4
+        with:
+          **me: coverage
+          path: cove**ge/
+
+  build:
+    needs:
+      - **nt
+      - test
+
+    runs-on: ubu**u-latest
+
+    permissions:
+      **ntents: read
+      id-token: writ**
+    steps:
+      - uses: actions**heckout@v4
+
+      - uses: google-**thub-actions/auth@v2
+        with**          workload_identity_provi**r: ${{ vars.GCP_WIF_PROVIDER }}
+ **       service_account: ${{ vars.**P_SA_EMAIL }}
+
+      - run: gclou**auth configure-docker us-central1**ocker.pkg.dev --quiet
+
+      - ru** |
+          docker build \
+     **     -t $IMAGE:sha-${GITHUB_SHA::** .
+
+      - uses: aquasecurity/tr**y-action@master
+        with:
+   **     image-ref: ${{ env.IMAGE }}:**a-${{ github.sha }}
+          sev**ity: CRITICAL,HIGH
+          exit**ode: '1'
+
+      - run: |
+        **docker push \
+          $IMAGE:sh**${GITHUB_SHA::7}
