@@ -8,6 +8,7 @@ on:
 
 env:
   IMAGE: us-central1-docker.pkg.dev/devops-assessment-bp/docker-images/devops-service
+  IMAGE_TAG: sha-${{ github.sha }}
 
 jobs:
   lint:
@@ -87,16 +88,16 @@ jobs:
       - name: Build image
         run: |
           docker build \
-            -t $IMAGE:sha-${GITHUB_SHA::7} .
+            -t $IMAGE:$IMAGE_TAG .
 
       - name: Push image
         run: |
           docker push \
-            $IMAGE:sha-${GITHUB_SHA::7}
+            $IMAGE:$IMAGE_TAG
 
       - name: Scan image
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.IMAGE }}:sha-${{ github.sha }}
+          image-ref: ${{ env.IMAGE }}:${{ env.IMAGE_TAG }}
           severity: CRITICAL,HIGH
           exit-code: '1'
