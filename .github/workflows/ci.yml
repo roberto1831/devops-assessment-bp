@@ -7,87 +7,89 @@ on:
   pull_request:
 
 env:
-  IMAGE: **-central1-docker.pkg.dev/devops-a**essment-bp/docker-images/devops-s**vice
+  IMAGE: us-central1-docker.pkg.dev/devops-assessment-bp/docker-images/devops-service
 
 jobs:
   lint:
-    runs-on: **untu-latest
+    runs-on: ubuntu-latest
 
     steps:
-      - u**s: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-**    - uses: actions/setup-node@v4**       with:
-          node-versi**: 20
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
           cache: npm
 
-      **run: npm ci
-      - run: npm run **nt
-      - run: npm run format:ch**k
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
 
   test:
-    runs-on: ubuntu-la**st
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: acti**s/checkout@v4
+      - uses: actions/checkout@v4
 
-      - uses: acti**s/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-   **     node-version: 20
-          c**he: npm
+          node-version: 20
+          cache: npm
 
       - run: npm ci
-    **- run: npm audit --audit-level=hi**
+      - run: npm audit --audit-level=high
 
       - run: npm test
-        e**:
+        env:
           API_KEY: test-key
-   **     JWT_SECRET: test-secret
+          JWT_SECRET: test-secret
 
-   ** - uses: actions/upload-artifact@**
+      - uses: actions/upload-artifact@v4
         with:
-          name: co**rage
+          name: coverage
           path: coverage/
 
- **tatic-analysis:
+  static-analysis:
     needs: test
- ** runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-    step**
-      - uses: actions/checkout@v**
-      - uses: actions/download-a**ifact@v4
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
         with:
-          **me: coverage
-          path: cove**ge/
+          name: coverage
+          path: coverage/
 
   build:
     needs:
-      - **nt
+      - lint
       - test
 
-    runs-on: ubu**u-latest
+    runs-on: ubuntu-latest
 
     permissions:
-      **ntents: read
-      id-token: writ**
+      contents: read
+      id-token: write
+
     steps:
-      - uses: actions**heckout@v4
+      - uses: actions/checkout@v4
 
-      - uses: google-**thub-actions/auth@v2
-        with**          workload_identity_provi**r: ${{ vars.GCP_WIF_PROVIDER }}
- **       service_account: ${{ vars.**P_SA_EMAIL }}
-
-      - run: gclou**auth configure-docker us-central1**ocker.pkg.dev --quiet
-
-      - ru** |
-          docker build \
-     **     -t $IMAGE:sha-${GITHUB_SHA::** .
-
-      - uses: aquasecurity/tr**y-action@master
+      - uses: google-github-actions/auth@v2
         with:
-   **     image-ref: ${{ env.IMAGE }}:**a-${{ github.sha }}
-          sev**ity: CRITICAL,HIGH
-          exit**ode: '1'
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SA_EMAIL }}
+
+      - run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
       - run: |
-        **docker push \
-          $IMAGE:sh**${GITHUB_SHA::7}
+          docker build -t $IMAGE:sha-${GITHUB_SHA::7} .
+
+      - uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE }}:sha-${{ github.sha }}
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+
+      - run: |
+          docker push $IMAGE:sha-${GITHUB_SHA::7}
