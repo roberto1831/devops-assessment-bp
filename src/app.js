@@ -42,7 +42,9 @@ app.post('/DevOps', (req, res) => {
     return res.status(400).send();
   }
 
-  return res.status(200).send();
+  return res.status(200).json({
+    message: `Hello ${req.body.to} your message will be send`,
+  });
 });
 
 app.post('/token', (req, res) => {
