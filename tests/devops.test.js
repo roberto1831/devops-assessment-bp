@@ -113,4 +113,28 @@ test('POST /DevOps returns greeting', async () => {
   });
 });
   
+test('GET /DevOps returns ERROR', async () => {
+  const response = await request(app).get('/DevOps');
+
+  expect(response.text).toBe('ERROR');
+});
+
+test('PUT /DevOps returns ERROR', async () => {
+  const response = await request(app).put('/DevOps');
+
+  expect(response.text).toBe('ERROR');
+});
+
+test('DELETE /DevOps returns ERROR', async () => {
+  const response = await request(app).delete('/DevOps');
+
+  expect(response.text).toBe('ERROR');
+});
+
+test('PATCH /DevOps returns ERROR', async () => {
+  const response = await request(app).patch('/DevOps');
+
+  expect(response.text).toBe('ERROR');
+});
+
 });
