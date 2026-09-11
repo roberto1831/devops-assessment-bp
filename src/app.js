@@ -6,6 +6,8 @@ const {
   markTokenAsUsed,
 } = require('./jwt');
 
+const devopsSchema = require('./schemas/devops');
+
 const app = express();
 
 app.use(express.json());
@@ -32,6 +34,12 @@ app.post('/DevOps', (req, res) => {
     markTokenAsUsed(payload.jti);
   } catch {
     return res.status(401).send();
+  }
+
+  const validation = devopsSchema.safeParse(req.body);
+
+  if (!validation.success) {
+    return res.status(400).send();
   }
 
   return res.status(200).send();
