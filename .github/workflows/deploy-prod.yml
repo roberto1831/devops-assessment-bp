@@ -50,17 +50,21 @@ jobs:
           curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
           sudo mv kustomize /usr/local/bin
 
-      - name: Update image
+      - name: Create Namespace
+        run: |
+          kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Update Image
         run: |
           cd infra/k8s/overlays/prod
           kustomize edit set image \
             devops-service=${IMAGE}:latest
 
-      - name: Apply manifests
+      - name: Apply Manifests
         run: |
           kubectl apply -k infra/k8s/overlays/prod
 
-      - name: Wait for rollout
+      - name: Wait for Rollout
         run: |
           kubectl -n prod rollout status \
             deployment/devops-service \
@@ -70,7 +74,7 @@ jobs:
         run: |
           kubectl -n prod get ingress
 
-      - name: Rollback if failed
+      - name: Rollback if Failed
         if: failure()
         run: |
           kubectl -n prod rollout undo \
