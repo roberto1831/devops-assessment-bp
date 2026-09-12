@@ -1,3 +1,6 @@
+process.env.API_KEY = 'valid-api-key';
+process.env.JWT_SECRET = 'test-secret';
+
 const request = require('supertest');
 const app = require('../src/app');
 const { verifyToken } = require('../src/jwt');
@@ -35,6 +38,14 @@ describe('DevOps API', () => {
     expect(response.status).toBe(401);
   });
 
+  test('POST /token with invalid API key returns 401', async () => {
+    const response = await request(app)
+      .post('/token')
+      .set('X-Parse-REST-API-Key', 'wrong-key');
+
+    expect(response.status).toBe(401);
+  });
+
   test('POST /token with API key returns a valid token', async () => {
     const response = await request(app)
       .post('/token')
@@ -46,6 +57,7 @@ describe('DevOps API', () => {
 
     expect(decoded.jti).toBeDefined();
   });
+
   test('POST /DevOps with reused JWT returns 401', async () => {
     const token = signToken();
 
@@ -72,6 +84,21 @@ describe('DevOps API', () => {
       });
 
     expect(secondResponse.status).toBe(401);
+  });
+
+  test('POST /DevOps with invalid JWT returns 401', async () => {
+    const response = await request(app)
+      .post('/DevOps')
+      .set('X-Parse-REST-API-Key', 'valid-api-key')
+      .set('X-JWT-KWY', 'invalid-token')
+      .send({
+        message: 'This is a test',
+        to: 'Juan Perez',
+        from: 'Rita Asturia',
+        timeToLifeSec: 45,
+      });
+
+    expect(response.status).toBe(401);
   });
 
   test('POST /DevOps with invalid payload returns 400', async () => {
