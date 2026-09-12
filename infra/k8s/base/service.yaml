@@ -1,13 +1,17 @@
 apiVersion: v1
 kind: Service
+
 metadata:
   name: devops-service
   annotations:
     cloud.google.com/backend-config: '{"default":"devops-backendconfig"}'
+
 spec:
   type: ClusterIP
+
   selector:
-    app: devops-app
+    app: devops-service
+
   ports:
     - port: 80
       targetPort: 8080
