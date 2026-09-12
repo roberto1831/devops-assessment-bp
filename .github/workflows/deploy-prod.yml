@@ -35,7 +35,12 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v2
 
-      - run: |
+      - name: Install GKE Auth Plugin
+        run: |
+          gcloud components install gke-gcloud-auth-plugin --quiet
+
+      - name: Get Cluster Credentials
+        run: |
           gcloud container clusters get-credentials \
             devops-prod \
             --region us-central1
