@@ -56,13 +56,21 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
         with:
-          name: coverage
-          path: coverage/
+          languages: javascript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
 
   build:
     needs:
